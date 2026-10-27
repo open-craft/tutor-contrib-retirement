@@ -71,10 +71,35 @@ If you want to run this command periodically in a local deployment, you can invo
 For a Kubernetes deployment, this plugin defines a [CronJob](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/) which runs the retirement pipeline according to the schedule defined in the `RETIREMENT_K8S_CRONJOB_SCHEDULE` configuration parameter.
 You can also tweak the [history limits](https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/#jobs-history-limits) for the CronJob.
 
+### Cleaning up retirement records
+
+After a learner is retired, the LMS still keeps a retirement record with their original username, email address, and full name.
+To delete these records, the retirement pipeline can run the [`retirement_archive_and_cleanup.py`](https://github.com/openedx/edx-platform/blob/03698e2/scripts/user_retirement/retirement_archive_and_cleanup.py) script after retiring learners.
+This script archives the records to an S3 bucket before deleting them from the LMS.
+
+The cleanup is disabled by default.
+To enable it, set `RETIREMENT_CLEANUP_S3_BUCKET_NAME`:
+
+```shell
+tutor config save \
+  --set RETIREMENT_CLEANUP_S3_BUCKET_NAME=my-retirement-archive \
+  --set RETIREMENT_CLEANUP_COOL_OFF_DAYS=7
+```
+
+`RETIREMENT_CLEANUP_COOL_OFF_DAYS` is the number of days to keep the records after the learner is retired, so the records are deleted `RETIREMENT_COOL_OFF_DAYS + RETIREMENT_CLEANUP_COOL_OFF_DAYS` days after the retirement request.
+With the values above, this matches the upstream default of 37 days.
+With the default value of `0`, the records are deleted in the same pipeline run that retires the learner.
+
+If you do not set `RETIREMENT_CLEANUP_AWS_ACCESS_KEY_ID` and `RETIREMENT_CLEANUP_AWS_SECRET_ACCESS_KEY`, the script uses the [default boto3 credential chain](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html).
+
 ## Configuration
 
 * `RETIREMENT_EDX_OAUTH2_CLIENT_ID` (default `"retirement_service_worker"`)
 * `RETIREMENT_COOL_OFF_DAYS` (default `30`)
+* `RETIREMENT_CLEANUP_COOL_OFF_DAYS` (default `0`)
+* `RETIREMENT_CLEANUP_S3_BUCKET_NAME` (default `""`, cleanup disabled)
+* `RETIREMENT_CLEANUP_AWS_ACCESS_KEY_ID` (default `""`)
+* `RETIREMENT_CLEANUP_AWS_SECRET_ACCESS_KEY` (default `""`)
 * `RETIREMENT_K8S_CRONJOB_HISTORYLIMIT_FAILURE` (default `1`)
 * `RETIREMENT_K8S_CRONJOB_HISTORYLIMIT_SUCCESS` (default `3`)
 * `RETIREMENT_K8S_CRONJOB_SCHEDULE` (default `"0 0 * * *"`, once a day at midnight)

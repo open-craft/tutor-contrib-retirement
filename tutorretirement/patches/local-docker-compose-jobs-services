@@ -3,5 +3,10 @@ retirement-job:
   image: {{ RETIREMENT_DOCKER_IMAGE }}
   volumes:
     - ../plugins/retirement/build/retirement/pipeline_config:/edx-platform/scripts/user_retirement/pipeline_config
+  {%- if RETIREMENT_CLEANUP_AWS_ACCESS_KEY_ID %}
+  environment:
+    AWS_ACCESS_KEY_ID: '{{ RETIREMENT_CLEANUP_AWS_ACCESS_KEY_ID }}'
+    AWS_SECRET_ACCESS_KEY: '{{ RETIREMENT_CLEANUP_AWS_SECRET_ACCESS_KEY }}'
+  {%- endif %}
   depends_on:
     - lms

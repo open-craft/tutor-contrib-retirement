@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* [Enhancement] When `RETIREMENT_CLEANUP_S3_BUCKET_NAME` is set, archive retirement records to S3 and delete them from the LMS after `RETIREMENT_CLEANUP_COOL_OFF_DAYS`.
+  Rebuild the image to enable this.
+
 ## Version 5.5.0 (2026-09-01)
 
 * [Enhancement] Support Tutor 22 and Open edX Verawood.

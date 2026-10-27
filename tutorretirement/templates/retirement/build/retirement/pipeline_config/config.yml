@@ -11,3 +11,7 @@ retirement_pipeline:
     {% if NOTES_HOST is defined %}- [ 'RETIRING_NOTES', 'NOTES_COMPLETE', 'LMS', 'retirement_retire_notes' ]{% endif %}
     - [ 'RETIRING_LMS_MISC', 'LMS_MISC_COMPLETE', 'LMS', 'retirement_lms_retire_misc' ]
     - [ 'RETIRING_LMS', 'LMS_COMPLETE', 'LMS', 'retirement_lms_retire' ]
+{% if RETIREMENT_CLEANUP_S3_BUCKET_NAME %}
+s3_archive:
+    bucket_name: {{ RETIREMENT_CLEANUP_S3_BUCKET_NAME }}
+{% endif %}

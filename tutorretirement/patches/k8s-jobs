@@ -21,6 +21,16 @@ spec:
                 - '-e'
                 - 'scripts/user_retirement/run_retirement_pipeline.sh'
                 - '{{ RETIREMENT_COOL_OFF_DAYS }}'
+                {%- if RETIREMENT_CLEANUP_S3_BUCKET_NAME %}
+                - '{{ RETIREMENT_CLEANUP_COOL_OFF_DAYS }}'
+                {%- endif %}
+              {%- if RETIREMENT_CLEANUP_AWS_ACCESS_KEY_ID %}
+              env:
+                - name: AWS_ACCESS_KEY_ID
+                  value: '{{ RETIREMENT_CLEANUP_AWS_ACCESS_KEY_ID }}'
+                - name: AWS_SECRET_ACCESS_KEY
+                  value: '{{ RETIREMENT_CLEANUP_AWS_SECRET_ACCESS_KEY }}'
+              {%- endif %}
               volumeMounts:
                 - name: pipeline-config
                   mountPath: '/edx-platform/scripts/user_retirement/pipeline_config/config.yml'

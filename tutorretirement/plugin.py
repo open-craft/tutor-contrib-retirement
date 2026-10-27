@@ -21,6 +21,12 @@ config = {
         "DOCKER_IMAGE": "{{ DOCKER_REGISTRY }}retirement:{{ RETIREMENT_VERSION }}",  # noqa: E501
         "EDX_OAUTH2_CLIENT_ID": "retirement_service_worker",
         "COOL_OFF_DAYS": 30,
+        # Days to keep the retirement records after the learner is retired.
+        "CLEANUP_COOL_OFF_DAYS": 0,
+        # The cleanup is disabled unless this bucket is set.
+        "CLEANUP_S3_BUCKET_NAME": "",
+        "CLEANUP_AWS_ACCESS_KEY_ID": "",
+        "CLEANUP_AWS_SECRET_ACCESS_KEY": "",
         "K8S_CRONJOB_HISTORYLIMIT_FAILURE": 1,
         "K8S_CRONJOB_HISTORYLIMIT_SUCCESS": 3,
         "K8S_CRONJOB_SCHEDULE": "0 0 * * *",
@@ -49,11 +55,11 @@ def retire_users(context):
     config = tutor_config.load(context.root)
     job_runner = context.job_runner(config)
     cool_off_days = config["RETIREMENT_COOL_OFF_DAYS"]
-    job_runner.run_task(
-        service="retirement",
-        command="bash -e scripts/user_retirement/run_retirement_pipeline.sh "
-                f"{cool_off_days}"
-    )
+    command = ("bash -e scripts/user_retirement/run_retirement_pipeline.sh "
+               f"{cool_off_days}")
+    if config["RETIREMENT_CLEANUP_S3_BUCKET_NAME"]:
+        command += f" {config['RETIREMENT_CLEANUP_COOL_OFF_DAYS']}"
+    job_runner.run_task(service="retirement", command=command)
 
 
 # Add the "templates" folder as a template root
